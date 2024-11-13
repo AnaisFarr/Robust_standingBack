@@ -58,9 +58,9 @@ from bioptim import (
     Node,
     MultiStart,
     MagnitudeType,
+    HolonomicBiorbdModel,
 )
 from casadi import MX, vertcat
-from holonomic_research.biorbd_model_holonomic_updated import BiorbdModelCustomHolonomic
 from Save import get_created_data_from_pickle
 from Salto_5phases_with_pelvis_landing import add_objectives, add_constraints, actuator_function, initialize_tau, add_x_bounds, add_u_bounds
 from plot_actuators import Joint
@@ -80,7 +80,7 @@ def save_results_holonomic(sol,
     """
     biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, seed = combinatorial_parameters
     index_holo = 2
-    biomedel_holo = BiorbdModelCustomHolonomic(biorbd_model_path[index_holo])
+    biomodel_holo = sol.ocp.nlp[index_holo].model
 
     # Save path
     save_folder = extra_parameters["save_folder"]
@@ -93,28 +93,9 @@ def save_results_holonomic(sol,
     else:
         file_path += "_DVG.pkl"
 
-    # Symbolic variables
-    Q_sym = cas.MX.sym("Q_u", 6)
-    Qdot_sym = cas.MX.sym("Qdot_u", 6)
-    Tau_sym = cas.MX.sym("Tau", 8)
-    lagrangian_multipliers_func = cas.Function(
-        "Compute_lagrangian_multipliers",
-        [Q_sym, Qdot_sym, Tau_sym],
-        [biomedel_holo.compute_the_lagrangian_multipliers(Q_sym, Qdot_sym, Tau_sym)],
-    )
-    q_holo_func = cas.Function(
-        "Compute_q_holo",
-        [Q_sym],
-        [biomedel_holo.state_from_partition(Q_sym, biomedel_holo.compute_v_from_u_explicit_symbolic(Q_sym))],
-    )
-    Bvu = biomedel_holo.coupling_matrix(q_holo_func(Q_sym))
-    vdot = Bvu @ Qdot_sym
-    qdot = biomedel_holo.state_from_partition(Qdot_sym, vdot)
-    qdot_holo_func = cas.Function(
-        "Compute_qdot_holo",
-        [Q_sym, Qdot_sym],
-        [qdot],
-    )
+    lagrangian_multipliers_func = biomodel_holo.compute_the_lagrangian_multipliers(),
+    q_holo_func = biomodel_holo.state_from_partition()
+    qdot_holo_func = biomodel_holo.compute_qdot()
 
     data = {}
     states = sol.decision_states(to_merge=SolutionMerge.NODES)
@@ -253,7 +234,7 @@ def custom_phase_transition_pre(
     udot_post = controllers[1].states.cx[nb_independent:]
 
     # Take the q of the indepente joint and calculate the q of dependent joint
-    v_post = controllers[1].model.compute_v_from_u_explicit_symbolic(u_post)
+    v_post = controllers[1].model.compute_q_v()(u_post, cas.DM.zeros(2, 1))
     q_post = controllers[1].model.state_from_partition(u_post, v_post)
 
     Bvu = controllers[1].model.coupling_matrix(q_post)
@@ -287,7 +268,7 @@ def custom_phase_transition_post(
     udot_pre = controllers[0].states.cx[nb_independent:]
 
     # Take the q of the indepente joint and calculate the q of dependent joint
-    v_pre = controllers[0].model.compute_v_from_u_explicit_symbolic(u_pre)
+    v_pre = controllers[0].model.compute_q_v()(u_pre, cas.DM.zeros(2, 1))
     q_pre = controllers[0].model.state_from_partition(u_pre, v_pre)
     Bvu = controllers[0].model.coupling_matrix(q_pre)
     vdot_pre = Bvu @ udot_pre
@@ -300,7 +281,7 @@ def custom_phase_transition_post(
 
 
 def custom_contraint_lambdas_normal(
-        controller: PenaltyController, bio_model: BiorbdModelCustomHolonomic) -> MX:
+        controller: PenaltyController, bio_model) -> MX:
 
     # Recuperer les q
     q_u = controller.states["q_u"].cx
@@ -310,7 +291,7 @@ def custom_contraint_lambdas_normal(
     new_tau = vertcat(pelvis_mx, tau)
 
     # Calculer lambdas
-    lambdas = bio_model.compute_the_lagrangian_multipliers(q_u, qdot_u, new_tau)
+    lambdas = bio_model.compute_the_lagrangian_multipliers()(q_u, qdot_u, new_tau)
 
     # Contrainte lagrange_0 (min_bound = -1, max_bound = 1)
     lagrange_0 = lambdas[0]
@@ -318,7 +299,7 @@ def custom_contraint_lambdas_normal(
     return lagrange_0
 
 def custom_contraint_lambdas_cisaillement(
-        controller: PenaltyController, bio_model: BiorbdModelCustomHolonomic) -> MX:
+        controller: PenaltyController, bio_model) -> MX:
     """
     lagrange_1**2 < lagrange_0**2
     """
@@ -330,7 +311,7 @@ def custom_contraint_lambdas_cisaillement(
     new_tau = vertcat(pelvis_mx, tau)
 
     # Calculer lambdas
-    lambdas = bio_model.compute_the_lagrangian_multipliers(q_u, qdot_u, new_tau)
+    lambdas = bio_model.compute_the_lagrangian_multipliers()(q_u, qdot_u, new_tau)
     lagrange_0 = lambdas[0]
     lagrange_1 = lambdas[1]
 
@@ -338,7 +319,7 @@ def custom_contraint_lambdas_cisaillement(
 
 
 def custom_contraint_lambdas_cisaillement_min_bound(
-        controller: PenaltyController, bio_model: BiorbdModelCustomHolonomic) -> MX:
+        controller: PenaltyController, bio_model) -> MX:
     """
     lagrange_1 < lagrange_0
     """
@@ -350,7 +331,7 @@ def custom_contraint_lambdas_cisaillement_min_bound(
     new_tau = vertcat(pelvis_mx, tau)
 
     # Calculer lambdas
-    lambdas = bio_model.compute_the_lagrangian_multipliers(q_u, qdot_u, new_tau)
+    lambdas = bio_model.compute_the_lagrangian_multipliers()(q_u, qdot_u, new_tau)
 
     # Contrainte lagrange_0 (min_bound = -1, max_bound = 1)
     lagrange_0 = lambdas[0]
@@ -362,7 +343,7 @@ def custom_contraint_lambdas_cisaillement_min_bound(
 
 
 def custom_contraint_lambdas_cisaillement_max_bound(
-        controller: PenaltyController, bio_model: BiorbdModelCustomHolonomic) -> MX:
+        controller: PenaltyController, bio_model) -> MX:
     """
     0.01*lagrange_0 < lagrange_1
     """
@@ -374,7 +355,7 @@ def custom_contraint_lambdas_cisaillement_max_bound(
     new_tau = vertcat(pelvis_mx, tau)
 
     # Calculer lambdas
-    lambdas = bio_model.compute_the_lagrangian_multipliers(q_u, qdot_u, new_tau)
+    lambdas = bio_model.compute_the_lagrangian_multipliers()(q_u, qdot_u, new_tau)
 
     # Contrainte lagrange_0 (min_bound = -1, max_bound = 1)
     lagrange_0 = lambdas[0]
@@ -388,7 +369,7 @@ def minimize_actuator_torques_CL(controller: PenaltyController, actuators) -> ca
 
     nb_independent = controller.model.nb_independent_joints
     u = controller.states.cx[:nb_independent]
-    v = controller.model.compute_v_from_u_explicit_symbolic(u)
+    v = controller.model.compute_q_v(u)
     q = controller.model.state_from_partition(u, v)
 
     tau = controller.controls["tau"].cx_start
@@ -406,7 +387,7 @@ def minimize_actuator_torques_CL(controller: PenaltyController, actuators) -> ca
 def prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, seed=0):
     bio_model = (BiorbdModel(biorbd_model_path[0]),
                  BiorbdModel(biorbd_model_path[1]),
-                 BiorbdModelCustomHolonomic(biorbd_model_path[2]),
+                 HolonomicBiorbdModel(biorbd_model_path[2]),
                  BiorbdModel(biorbd_model_path[3]),
                  BiorbdModel(biorbd_model_path[4]),
                  )
@@ -680,7 +661,6 @@ def main():
     solver.set_bound_frac(1e-8)
     solver.set_bound_push(1e-8)
     solver.set_tol(1e-6)
-    solver.set_maximum_iterations(0)
 
     biorbd_model_path = [(model_path_1contact,
                          model_path,

@@ -161,10 +161,10 @@ def save_results(sol,
 
 def CoM_over_toes(controller: PenaltyController) -> cas.MX:
     q = controller.states["q"].cx_start
-    CoM_pos = controller.model.center_of_mass(q)
+    CoM_pos = controller.model.center_of_mass()(q, [])
     CoM_pos_y = CoM_pos[1]
     marker_index = controller.model.marker_index("Foot_Toe_marker")
-    marker_pos = controller.model.markers(q)[marker_index]
+    marker_pos = controller.model.marker(marker_index)(q, [])
     marker_pos_y = marker_pos[1]
     constraint = marker_pos_y - CoM_pos_y
     return constraint
