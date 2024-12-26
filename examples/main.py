@@ -41,12 +41,21 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
     if WITH_MULTI_START:
 
+        end = 20
+        if condition == "ntc":
+            start = 14
+        elif condition == "ktc":
+            start = 14
+        elif condition == "htc":
+            start = 10
+
+
         combinatorial_parameters = {
             "bio_model_path": [biorbd_model_path],
             "phase_time": [phase_time],
             "n_shooting": [n_shooting],
             "WITH_MULTI_START": [True],
-            "seed": list(range(14 if condition == "ntc" else 0, 20)),
+            "seed": list(range(start, end)),
         }
 
         multi_start = prepare_multi_start(
