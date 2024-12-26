@@ -4,7 +4,8 @@ from plotly.colors import DEFAULT_PLOTLY_COLORS
 from pyorerun import PhaseRerun, BiorbdModel
 from pyorerun.multi_frame_rate_phase_rerun import MultiFrameRatePhaseRerun
 
-folder = "with_noise/HTC"
+folder = "backflip_Vpost_submission/ntc"
+filename = "sol_no_seed_CVG.pkl"
 model_path = "../models/Model2D_7Dof_2C_5M_CL_V3.bioMod"
 
 # remove "rgb(" and ")" and split by ","
@@ -24,4 +25,4 @@ m.options.mesh_color = colors[0]
 phase_reruns[-1].add_animated_model(m, q)
 
 mrr2 = MultiFrameRatePhaseRerun(phase_reruns=phase_reruns)
-mrr2.rerun("all_multistart")
+mrr2.rerun_by_frame("all_multistart")
