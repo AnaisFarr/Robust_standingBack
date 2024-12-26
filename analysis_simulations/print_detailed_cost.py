@@ -49,15 +49,15 @@ with open(f"best_objectives_and_constraints_KTC.txt", "w") as f:
 
 data = pickle.load(open(folder_FREE + f"/sol_{file_idx[1]}_CVG.pkl", "rb"))
 sol = pickle.load(open(folder_FREE + f"/sol_{file_idx[1]}_CVG_sol.pkl", "rb"))
-sol.ocp = prepare_ocp_free(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+sol.ocp = prepare_ocp_free(biorbd_model_path, data["phase_time"], n_shooting, WITH_MULTI_START=False)
 
 with open(f"best_objectives_and_constraints_NTC.txt", "w") as f:
     with redirect_stdout(f):
         sol.print_cost()
 
-data = pickle.load(open(folder_HTC + f"/sol_{file_idx[1]}_CVG.pkl", "rb"))
-sol = pickle.load(open(folder_HTC + f"/sol_{file_idx[1]}_CVG_sol.pkl", "rb"))
-sol.ocp = prepare_ocp_HTC(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+data = pickle.load(open(folder_HTC + f"/sol_{file_idx[2]}_CVG.pkl", "rb"))
+sol = pickle.load(open(folder_HTC + f"/sol_{file_idx[2]}_CVG_sol.pkl", "rb"))
+sol.ocp = prepare_ocp_HTC(biorbd_model_path, data["phase_time"], n_shooting, WITH_MULTI_START=False)
 
 with open(f"best_objectives_and_constraints_HTC.txt", "w") as f:
     with redirect_stdout(f):
