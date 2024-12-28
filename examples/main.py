@@ -21,7 +21,7 @@ from src.multistart import prepare_multi_start
 def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = False, condition: str = ""):
     # --- Parameters --- #
     movement = "backflip"
-    version = "post_submission"
+    version = "post_submission_v2"
 
     WITH_MULTI_START = multi_start
     save_folder = f"../results/{str(movement)}_V{version}/{condition}"
@@ -41,13 +41,13 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
     if WITH_MULTI_START:
 
-        end = 20
+        end = 5
         if condition == "ntc":
-            start = 14
+            start = 0
         elif condition == "ktc":
-            start = 14
+            start = 0
         elif condition == "htc":
-            start = 10
+            start = 0
 
 
         combinatorial_parameters = {
@@ -85,6 +85,6 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
 
 if "__main__" == __name__:
-    main(prepare_ocp_with_ktc, save_results_taudot, multi_start=True, condition="ktc")
     main(prepare_ocp_ntc, save_results_taudot, multi_start=True, condition="ntc")
+    main(prepare_ocp_with_ktc, save_results_taudot, multi_start=True, condition="ktc")
     main(prepare_ocp_with_htc, save_results_holonomic_taudot, multi_start=True, condition="htc")
