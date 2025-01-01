@@ -114,10 +114,10 @@ def adjust_q_with_full_floating_base(q: np.ndarray) -> np.ndarray:
 
 
 # Solution with and without holonomic constraints
-common_path = "../results/with_noise/"
-path_without = common_path + "KTC/"
-path_CL = common_path + "HTC/"
-path_free = common_path + "NTC/"
+common_path = "../results/backflip_Vpost_submission_v2/"
+path_without = common_path + "ktc/"
+path_CL = common_path + "htc/"
+path_free = common_path + "ntc/"
 
 path_model = "../models/Model2D_7Dof_2C_5M_CL_V3.bioMod"
 model = biorbd.Model(path_model)
@@ -132,7 +132,12 @@ else:
 
 biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
 phase_time = (0.2, 0.2, 0.3, 0.3, 0.3)
-n_shooting = (20, 20, 30, 30, 30)
+n_shooting = (40, 20, 30, 30, 40)
+n_nodes = tuple(value + 1 for value in n_shooting)
+
+tuck_node_start = n_nodes[0] + n_nodes[1]
+tuck_node_end = tuck_node_start + n_nodes[2]
+
 
 min_cost_without = np.inf
 for file in os.listdir(path_without):
@@ -180,12 +185,12 @@ print("Residual forces at take-off free: ", np.linalg.norm(data_free["contact_fo
 
 PLOT_TAU_FLAG = True
 PLOT_INERTIA_FLAG = True
-PLOT_ENERY_FLAG = True
-# format_graph = "png"
+PLOT_ENERGY_FLAG = True
+format_graph = "png"
 # format_graph = "pdf"
-format_graph = "svg"
+# format_graph = "svg"
 
-n_shooting_plus_one = (21, 21, 31, 31, 31)
+
 phase_delimiter = ["-", "--", ":", "-.", "-"]
 dof_names = [
     "Pelvis \n(Translation Y)",
@@ -231,7 +236,7 @@ time_control_CL = (
     )
     - time_CL[0][-1]
 )
-time_tuck_CL = time_vector_CL[42:73]
+time_tuck_CL = time_vector_CL[tuck_node_start:tuck_node_end]
 
 # Solution without closed-loop constraints
 q_without_rad = data_without["q_all"][:, :]
@@ -265,7 +270,7 @@ time_control_without = (
     )
     - time_without[0][-1]
 )
-time_tuck_without = time_vector_without[42:73]
+time_tuck_without = time_vector_without[tuck_node_start:tuck_node_end]
 
 # Solution without any tucking constraints
 q_free_rad = data_free["q_all"][:, :]
@@ -297,7 +302,7 @@ time_control_free = (
     )
     - time_free[0][-1]
 )
-time_tuck_free = time_vector_free[42:73]
+time_tuck_free = time_vector_free[tuck_node_start:tuck_node_end]
 
 time_max_graph = max(time_vector_without[-1], time_vector_CL[-1], time_vector_free[-1])
 time_min_graph = min(time_vector_without[0], time_vector_CL[0], time_vector_free[0])
@@ -348,8 +353,8 @@ if PLOT_TAU_FLAG:
     min_bound_q = np.ones((q_without_rad.shape[0], time_vector_without.shape[0])) * -1000
     max_bound_q = np.ones((q_without_rad.shape[0], time_vector_without.shape[0])) * 1000
     for i_phase in range(5):
-        idx_beginning = sum(n_shooting_plus_one[:i_phase])
-        idx_end = sum(n_shooting_plus_one[: i_phase + 1]) - 1
+        idx_beginning = sum(n_nodes[:i_phase])
+        idx_end = sum(n_nodes[: i_phase + 1]) - 1
         for i_dof in range(8):
             if data_without["min_bounds_q"][i_phase][i_dof, 0] > min_bound_q[i_dof, idx_beginning]:
                 min_bound_q[i_dof, idx_beginning] = data_without["min_bounds_q"][i_phase][i_dof, 0]
@@ -443,7 +448,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_free,
-            q_free_deg[i_dof, 42:73],
+            q_free_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:green",
             alpha=0.75,
             linewidth=3,
@@ -458,7 +463,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_without,
-            q_without_deg[i_dof, 42:73],
+            q_without_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:blue",
             alpha=0.75,
             linewidth=3,
@@ -473,7 +478,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_CL,
-            q_CL_deg[i_dof, 42:73],
+            q_CL_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:orange",
             alpha=0.75,
             linewidth=3,
@@ -567,7 +572,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_free,
-            qdot_free_deg[i_dof, 42:73],
+            qdot_free_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:green",
             alpha=0.75,
             linewidth=3,
@@ -582,7 +587,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_without,
-            qdot_without_deg[i_dof, 42:73],
+            qdot_without_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:blue",
             alpha=0.75,
             linewidth=3,
@@ -597,7 +602,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_CL,
-            qdot_CL_deg[i_dof, 42:73],
+            qdot_CL_deg[i_dof, tuck_node_start:tuck_node_end],
             color="tab:orange",
             alpha=0.75,
             linewidth=3,
@@ -840,7 +845,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_free,
-            tau_free[i_dof, 42:73],
+            tau_free[i_dof, tuck_node_start:tuck_node_end],
             color="tab:green",
             alpha=0.75,
             linewidth=3,
@@ -855,7 +860,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_without,
-            tau_without[i_dof, 42:73],
+            tau_without[i_dof, tuck_node_start:tuck_node_end],
             color="tab:blue",
             alpha=0.75,
             linewidth=3,
@@ -870,7 +875,7 @@ if PLOT_TAU_FLAG:
         )
         axs[num_line, num_col].plot(
             time_tuck_CL,
-            tau_CL[i_dof, 42:73],
+            tau_CL[i_dof, tuck_node_start:tuck_node_end],
             color="tab:orange",
             alpha=0.75,
             linewidth=3,
@@ -917,7 +922,7 @@ if PLOT_TAU_FLAG:
     )
     axs[0, 0].plot(
         time_tuck_free,
-        np.sum(np.abs(tau_free[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_free[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -932,7 +937,7 @@ if PLOT_TAU_FLAG:
     )
     axs[0, 0].plot(
         time_tuck_without,
-        np.sum(np.abs(tau_without[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_without[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:blue",
         alpha=0.75,
         linewidth=3,
@@ -947,7 +952,7 @@ if PLOT_TAU_FLAG:
     )
     axs[0, 0].plot(
         time_tuck_CL,
-        np.sum(np.abs(tau_CL[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_CL[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -981,7 +986,7 @@ if PLOT_TAU_FLAG:
     )
     axs[1, 0].plot(
         time_tuck_free,
-        np.sum(np.abs(tau_free_ratio_all[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_free_ratio_all[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -996,7 +1001,7 @@ if PLOT_TAU_FLAG:
     )
     axs[1, 0].plot(
         time_tuck_without,
-        np.sum(np.abs(tau_without_ratio_all[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_without_ratio_all[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:blue",
         alpha=0.75,
         linewidth=3,
@@ -1011,7 +1016,7 @@ if PLOT_TAU_FLAG:
     )
     axs[1, 0].plot(
         time_tuck_CL,
-        np.sum(np.abs(tau_CL_ratio_all[:, 42:73]), axis=0),
+        np.sum(np.abs(tau_CL_ratio_all[:, tuck_node_start:tuck_node_end]), axis=0),
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -1024,9 +1029,9 @@ if PLOT_TAU_FLAG:
     # tau_without_ratio_all = np.zeros(tau_without.shape)
     # tau_free_ratio_all = np.zeros(tau_free.shape)
 
-    integral_tau_all_CL = np.trapezoid(np.sum(np.abs(tau_CL), axis=0), x=time_vector_CL)
-    integral_tau_all_without = np.trapezoid(np.sum(np.abs(tau_without), axis=0), x=time_vector_without)
-    integral_tau_all_free = np.trapezoid(np.sum(np.abs(tau_free), axis=0), x=time_vector_free)
+    integral_tau_all_CL = np.trapz(np.sum(np.abs(tau_CL), axis=0), x=time_vector_CL)
+    integral_tau_all_without = np.trapz(np.sum(np.abs(tau_without), axis=0), x=time_vector_without)
+    integral_tau_all_free = np.trapz(np.sum(np.abs(tau_free), axis=0), x=time_vector_free)
 
     axs[0, 1].bar(
         [0, 1, 2],
@@ -1037,9 +1042,9 @@ if PLOT_TAU_FLAG:
     axs[0, 1].text(1, integral_tau_all_without + 0.1, f"{integral_tau_all_without:.2f} Nms", ha="center", va="bottom")
     axs[0, 1].text(2, integral_tau_all_CL + 0.1, f"{integral_tau_all_CL:.2f} Nms", ha="center", va="bottom")
 
-    integral_tau_all_ratio_CL = np.trapezoid(np.sum(np.abs(tau_CL_ratio_all), axis=0), x=time_vector_CL)
-    integral_tau_all_ratio_without = np.trapezoid(np.sum(np.abs(tau_without_ratio_all), axis=0), x=time_vector_without)
-    integral_tau_all_ratio_free = np.trapezoid(np.sum(np.abs(tau_free_ratio_all), axis=0), x=time_vector_free)
+    integral_tau_all_ratio_CL = np.trapz(np.sum(np.abs(tau_CL_ratio_all), axis=0), x=time_vector_CL)
+    integral_tau_all_ratio_without = np.trapz(np.sum(np.abs(tau_without_ratio_all), axis=0), x=time_vector_without)
+    integral_tau_all_ratio_free = np.trapz(np.sum(np.abs(tau_free_ratio_all), axis=0), x=time_vector_free)
     axs[1, 1].bar(
         [0, 1, 2],
         [integral_tau_all_ratio_free, integral_tau_all_ratio_without, integral_tau_all_ratio_CL],
@@ -1103,7 +1108,7 @@ if PLOT_TAU_FLAG:
     )
     axs.plot(
         time_tuck_free,
-        np.abs(tau_free_ratio_all[3, 42:73]),
+        np.abs(tau_free_ratio_all[3, tuck_node_start:tuck_node_end]),
         color="tab:green",
         alpha=0.73,
         linewidth=3,
@@ -1118,7 +1123,7 @@ if PLOT_TAU_FLAG:
     )
     axs.plot(
         time_tuck_without,
-        np.abs(tau_without_ratio_all[3, 42:73]),
+        np.abs(tau_without_ratio_all[3, tuck_node_start:tuck_node_end]),
         color="tab:blue",
         alpha=0.73,
         linewidth=3,
@@ -1133,7 +1138,7 @@ if PLOT_TAU_FLAG:
     )
     axs.plot(
         time_tuck_CL,
-        np.abs(tau_CL_ratio_all[3, 42:73]),
+        np.abs(tau_CL_ratio_all[3, tuck_node_start:tuck_node_end]),
         color="tab:orange",
         alpha=0.73,
         linewidth=3,
@@ -1158,20 +1163,20 @@ if PLOT_TAU_FLAG:
     plt.savefig("tau_ratio_hip" + "." + format_graph, format=format_graph, dpi=300)
     plt.show()
 
-    hip_tau_CL = np.trapezoid(np.abs(tau_CL[2, 21:104]), x=time_vector_CL[21:104])
-    hip_tau_without = np.trapezoid(np.abs(tau_without[2, 21:104]), x=time_vector_without[21:104])
-    hip_tau_free = np.trapezoid(np.abs(tau_free[2, 21:104]), x=time_vector_free[21:104])
+    hip_tau_CL = np.trapz(np.abs(tau_CL[2, 21:104]), x=time_vector_CL[21:104])
+    hip_tau_without = np.trapz(np.abs(tau_without[2, 21:104]), x=time_vector_without[21:104])
+    hip_tau_free = np.trapz(np.abs(tau_free[2, 21:104]), x=time_vector_free[21:104])
     print("Hip tau CL: ", hip_tau_CL)
     print("Hip tau without: ", hip_tau_without)
     print("Hip tau free: ", hip_tau_free)
     print(f"A reduction of {(hip_tau_without - hip_tau_CL) / hip_tau_without * 100:.2f}% with the HTC")
     print(f"A reduction of {(hip_tau_free - hip_tau_CL) / hip_tau_free * 100:.2f}% with the NTC")
 
-    arm_tau_CL = np.trapezoid(np.abs(tau_CL[0, 21:104]) + np.abs(tau_CL[1, 21:104]), x=time_vector_CL[21:104])
-    arm_tau_without = np.trapezoid(
+    arm_tau_CL = np.trapz(np.abs(tau_CL[0, 21:104]) + np.abs(tau_CL[1, 21:104]), x=time_vector_CL[21:104])
+    arm_tau_without = np.trapz(
         np.abs(tau_without[0, 21:104]) + np.abs(tau_without[1, 21:104]), x=time_vector_without[21:104]
     )
-    arm_tau_free = np.trapezoid(np.abs(tau_free[0, 21:104]) + np.abs(tau_free[1, 21:104]), x=time_vector_free[21:104])
+    arm_tau_free = np.trapz(np.abs(tau_free[0, 21:104]) + np.abs(tau_free[1, 21:104]), x=time_vector_free[21:104])
     print("Arm tau CL: ", arm_tau_CL)
     print("Arm tau without: ", arm_tau_without)
     print("Arm tau free: ", arm_tau_free)
@@ -1290,7 +1295,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[0].plot(
         time_tuck_free,
-        inertia_free[42:73, 0],
+        inertia_free[tuck_node_start:tuck_node_end, 0],
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -1305,7 +1310,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[0].plot(
         time_tuck_without,
-        inertia_without[42:73, 0],
+        inertia_without[tuck_node_start:tuck_node_end, 0],
         color="tab:blue",
         alpha=0.75,
         linewidth=1,
@@ -1320,7 +1325,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[0].plot(
         time_tuck_CL,
-        inertia_CL[42:73, 0],
+        inertia_CL[tuck_node_start:tuck_node_end, 0],
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -1364,7 +1369,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[1].plot(
         time_tuck_free,
-        np.linalg.norm(ang_mom_free[42:73, :], axis=1),
+        np.linalg.norm(ang_mom_free[tuck_node_start:tuck_node_end, :], axis=1),
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -1379,7 +1384,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[1].plot(
         time_tuck_without,
-        np.linalg.norm(ang_mom_without[42:73, :], axis=1),
+        np.linalg.norm(ang_mom_without[tuck_node_start:tuck_node_end, :], axis=1),
         color="tab:blue",
         alpha=0.75,
         linewidth=3,
@@ -1394,7 +1399,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[1].plot(
         time_tuck_CL,
-        np.linalg.norm(ang_mom_CL[42:73, :], axis=1),
+        np.linalg.norm(ang_mom_CL[tuck_node_start:tuck_node_end, :], axis=1),
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -1436,7 +1441,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[2].plot(
         time_tuck_free,
-        body_velo_free[42:73, 0],
+        body_velo_free[tuck_node_start:tuck_node_end, 0],
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -1451,7 +1456,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[2].plot(
         time_tuck_without,
-        body_velo_without[42:73, 0],
+        body_velo_without[tuck_node_start:tuck_node_end, 0],
         color="tab:blue",
         alpha=0.75,
         linewidth=3,
@@ -1466,7 +1471,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[2].plot(
         time_tuck_CL,
-        body_velo_CL[42:73, 0],
+        body_velo_CL[tuck_node_start:tuck_node_end, 0],
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -1496,7 +1501,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[3].plot(
         time_tuck_free,
-        centricugal_free[42:73],
+        centricugal_free[tuck_node_start:tuck_node_end],
         color="tab:green",
         alpha=0.75,
         linewidth=3,
@@ -1511,7 +1516,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[3].plot(
         time_tuck_without,
-        centricugal_without[42:73],
+        centricugal_without[tuck_node_start:tuck_node_end],
         color="tab:blue",
         alpha=0.75,
         linewidth=3,
@@ -1526,7 +1531,7 @@ if PLOT_INERTIA_FLAG:
     )
     ax[3].plot(
         time_tuck_CL,
-        centricugal_CL[42:73],
+        centricugal_CL[tuck_node_start:tuck_node_end],
         color="tab:orange",
         alpha=0.75,
         linewidth=3,
@@ -1546,16 +1551,16 @@ if PLOT_INERTIA_FLAG:
     print("Max centrifugal pseudo-force without: ", np.max(centricugal_without))
     print("Max centrifugal pseudo-force free: ", np.max(centricugal_free))
 
-if PLOT_ENERY_FLAG:
+if PLOT_ENERGY_FLAG:
     power_without = np.abs(tau_without * qdot_without_rad[3:, :])
     power_free = np.abs(tau_free * qdot_free_rad[3:, :])
     power_CL = np.abs(tau_CL * qdot_CL_rad[3:, :])
     power_total_without = np.sum(power_without, axis=0)
     power_total_free = np.sum(power_free, axis=0)
     power_total_CL = np.sum(power_CL, axis=0)
-    energy_without = np.trapezoid(power_total_without, time_vector_without)
-    energy_free = np.trapezoid(power_total_free, time_vector_free)
-    energy_CL = np.trapezoid(power_total_CL, time_vector_CL)
+    energy_without = np.trapz(power_total_without, time_vector_without)
+    energy_free = np.trapz(power_total_free, time_vector_free)
+    energy_CL = np.trapz(power_total_CL, time_vector_CL)
 
     print("Energy CL : ", energy_CL, "J")
     print("Energy without : ", energy_without, "J")
