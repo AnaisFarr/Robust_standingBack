@@ -135,9 +135,6 @@ phase_time = (0.2, 0.2, 0.3, 0.3, 0.3)
 n_shooting = (40, 20, 30, 30, 40)
 n_nodes = tuple(value + 1 for value in n_shooting)
 
-tuck_node_start = n_nodes[0] + n_nodes[1]
-tuck_node_end = tuck_node_start + n_nodes[2]
-
 
 min_cost_without = np.inf
 for file in os.listdir(path_without):
@@ -182,6 +179,9 @@ print("Computational time free: ", data_free["real_time_to_optimize"] / 60, "min
 print("Residual forces at take-off without: ", np.linalg.norm(data_without["contact_forces"][0][:, -1]), "N")
 print("Residual forces at take-off CL: ", np.linalg.norm(data_CL["contact_forces"][0][:, -1]), "N")
 print("Residual forces at take-off free: ", np.linalg.norm(data_free["contact_forces"][0][:, -1]), "N")
+
+tuck_node_start = n_nodes[0] + n_nodes[1]
+tuck_node_end = tuck_node_start + n_nodes[2]
 
 PLOT_TAU_FLAG = True
 PLOT_INERTIA_FLAG = True
@@ -1592,3 +1592,34 @@ if PLOT_ENERGY_FLAG:
     plt.subplots_adjust(wspace=0.4, bottom=0.2, top=0.8)
     plt.savefig("Energy" + "." + format_graph, format=format_graph, dpi=300)
     plt.show()
+
+
+
+print("Residual forces at take-off without: ", np.linalg.norm(data_without["contact_forces"][0][:, -1]), "N")
+print("Residual forces at take-off CL: ", np.linalg.norm(data_CL["contact_forces"][0][:, -1]), "N")
+print("Residual forces at take-off free: ", np.linalg.norm(data_free["contact_forces"][0][:, -1]), "N")
+
+fig, axs = plt.subplots(1, 2, figsize=(10, 4))
+axs[0].plot(np.array([time_vector_free[0], time_vector_free[-1]]), np.array([0, 0]), "-k", linewidth=0.5)
+axs[1].plot(np.array([time_vector_free[0], time_vector_free[-1]]), np.array([0, 0]), "-k", linewidth=0.5)
+# Propulsion phase
+axs[0].plot(time_vector_free[:n_shooting[0]+1], data_free["contact_forces"][0][0, :], color="tab:green", label="No tucking constraint")
+axs[1].plot(time_vector_free[:n_shooting[0]+1], data_free["contact_forces"][0][1, :], color="tab:green", label="No tucking constraint")
+axs[0].plot(time_vector_without[:n_shooting[0]+1], data_without["contact_forces"][0][0, :], color="tab:blue", label="Kinematic tucking constraints")
+axs[1].plot(time_vector_without[:n_shooting[0]+1], data_without["contact_forces"][0][1, :], color="tab:blue", label="Kinematic tucking constraints")
+axs[0].plot(time_vector_CL[:n_shooting[0]+1], data_CL["contact_forces"][0][0, :], color="tab:orange", label="Holonomic tucking constraints")
+axs[1].plot(time_vector_CL[:n_shooting[0]+1], data_CL["contact_forces"][0][1, :], color="tab:orange", label="Holonomic tucking constraints")
+# Landing phase
+axs[0].plot(time_vector_free[-n_shooting[-1]-1:], data_free["contact_forces"][-1][0, :], color="tab:green")
+axs[1].plot(time_vector_free[-n_shooting[-1]-1::], data_free["contact_forces"][-1][1, :], color="tab:green")
+axs[0].plot(time_vector_without[-n_shooting[-1]-1::], data_without["contact_forces"][-1][0, :], color="tab:blue")
+axs[1].plot(time_vector_without[-n_shooting[-1]-1::], data_without["contact_forces"][-1][1, :], color="tab:blue")
+axs[0].plot(time_vector_CL[-n_shooting[-1]-1::], data_CL["contact_forces"][-1][0, :], color="tab:orange")
+axs[1].plot(time_vector_CL[-n_shooting[-1]-1::], data_CL["contact_forces"][-1][1, :], color="tab:orange")
+plot_all_lines(time_end_phase_CL, time_end_phase_without, time_end_phase_free, axs[0])
+plot_all_lines(time_end_phase_CL, time_end_phase_without, time_end_phase_free, axs[1])
+axs[0].legend()
+axs[0].set_title("Horizontal contact force [N]")
+axs[1].set_title("Vertical contact force [N]")
+plt.savefig("Contact_forces" + "." + format_graph, format=format_graph, dpi=300)
+plt.show()
