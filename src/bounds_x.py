@@ -28,7 +28,7 @@ def add_x_bounds(bio_models) -> BoundsList:
     q_bounds[0].max[0, :] = 1
     q_bounds[0].min[1, :] = -1
     q_bounds[0].max[1, :] = 2
-    qdot_bounds[0].min[3, :] = 0  # A commenter si marche pas
+    #qdot_bounds[0].min[3, :] = 0  # A commenter si marche pas #todo: MICKAEL: determine if it affects the propulsion
     q_bounds[0].min[3, 2] = np.pi / 2
 
     # Phase 1: Flight

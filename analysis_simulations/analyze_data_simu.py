@@ -114,7 +114,7 @@ def adjust_q_with_full_floating_base(q: np.ndarray) -> np.ndarray:
 
 
 # Solution with and without holonomic constraints
-common_path = "../results/backflip_Vpost_submission_v2/"
+common_path = "../results/backflip_Vpost_submission_v3/"
 path_without = common_path + "ktc/"
 path_CL = common_path + "htc/"
 path_free = common_path + "ntc/"

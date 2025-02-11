@@ -14,7 +14,7 @@ phase_time = (0.2, 0.2, 0.3, 0.3, 0.3)
 n_shooting = (40, 20, 30, 30, 40)
 
 # folder = "with_noise_same_computer/"
-folder = "../results/backflip_Vpost_submission/"
+folder = "../results/backflip_Vpost_submission_v2/"
 folder_HTC = folder + "htc/"
 folder_KTC = folder + "ktc/"
 folder_NTC = folder + "htc/"

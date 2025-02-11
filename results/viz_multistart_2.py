@@ -6,7 +6,7 @@ import rerun as rr
 from pyorerun import PhaseRerun, BiorbdModel
 from pyorerun.multi_frame_rate_phase_rerun import MultiFrameRatePhaseRerun
 
-folder = "backflip_Vpost_submission/"
+folder = "backflip_Vpost_submission_v3/"
 # folder_HTC = folder + "HTC"
 folder_KTC = folder + "ktc"
 folder_FREE = folder + "ntc"
@@ -40,8 +40,9 @@ colors = colors + colors + colors  # duplicate the colors to have enough for all
 
 # Charger les données
 phase_reruns = []
-#for config, (folder, str_suffix) in enumerate(zip([folder_KTC, folder_HTC, folder_FREE], ["KTC", "HTC", "NTC"])):
-for config, (folder, str_suffix) in enumerate(zip([folder_KTC, folder_FREE], ["htc", "ktc", "ntc"])):
+# for config, (folder, str_suffix) in enumerate(zip([folder_KTC,  folder_FREE], ["KTC",  "NTC"])):
+for config, (folder, str_suffix) in enumerate(zip([folder_HTC, folder_KTC, folder_FREE], ["htc", "ktc", "ntc"])):
+# for config, (folder, str_suffix) in enumerate(zip([folder_FREE], ["ntc"])):
     #  get the number of _CVG.pkl files in the folder
     n_files = len([name for name in os.listdir(folder) if name.endswith("G.pkl") and not name.__contains__("no_seed")])
     print(folder)
@@ -83,7 +84,7 @@ rr.log(
         fov_y=0.7853982,
         aspect_ratio=1.7777778,
         camera_xyz=rr.ViewCoordinates.FLU,
-        image_plane_distance=3,
+        #image_plane_distance=3,
     ),
 )
 rr.log(
