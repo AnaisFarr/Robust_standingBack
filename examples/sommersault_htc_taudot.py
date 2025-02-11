@@ -45,6 +45,7 @@ from src.holonomic_torque_derivative_dynamics import (
 from src.objectives import add_objectives, minimize_actuator_torques_CL, add_taudot_objectives
 from src.multistart import prepare_multi_start
 from src.phase_transitions import custom_takeoff, custom_phase_transition_pre, custom_phase_transition_post
+from src.collision import transition_pre_with_collision
 from src.save_load_helpers import get_created_data_from_pickle
 from src.save_results import save_results_holonomic_taudot
 from src.initial_guess_utils import interpolate_array
@@ -127,7 +128,8 @@ def prepare_ocp(biorbd_model_path: tuple, phase_time: tuple, n_shooting: tuple, 
     # Transition de phase
     phase_transitions = PhaseTransitionList()
     phase_transitions.add(custom_takeoff, phase_pre_idx=0)
-    phase_transitions.add(custom_phase_transition_pre, phase_pre_idx=1)
+    # phase_transitions.add(custom_phase_transition_pre, phase_pre_idx=1)
+    phase_transitions.add(transition_pre_with_collision, phase_pre_idx=1)
     phase_transitions.add(custom_phase_transition_post, phase_pre_idx=2)
     phase_transitions.add(PhaseTransitionFcn.IMPACT, phase_pre_idx=3)
 
