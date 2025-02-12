@@ -255,14 +255,14 @@ def prepare_ocp(biorbd_model_path: tuple, phase_time: tuple, n_shooting: tuple, 
 def main():
     # --- Parameters --- #
     movement = "Salto_CL"
-    version = "Pierre_taudot2_force_constrained_no_noise"
+    version = "Pierre_taudot2_collision"
 
     WITH_MULTI_START = False
     save_folder = f"../results/{str(movement)}_V{version}"
 
     biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.2, 0.2, 0.3, 0.3, 0.3)
-    n_shooting = (20, 20, 30, 30, 30)
+    phase_time = (0.4, 0.2, 0.3, 0.3, 1)
+    n_shooting = (40, 20, 30, 30, 40)
 
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57", show_online_optim=False)
@@ -300,11 +300,13 @@ def main():
         sol.print_cost()
 
         # --- Save results --- #
-        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
-        sol.animate(viewer="pyorerun")
-
         combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
         save_results_holonomic_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
+
+        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
+        # animation won't work because its a custom model
+        # sol.animate(viewer="pyorerun")
+
 
 
 if __name__ == "__main__":

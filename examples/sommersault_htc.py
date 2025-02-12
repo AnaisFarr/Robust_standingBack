@@ -286,7 +286,8 @@ def main():
 
         # --- Save results --- #
         sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
-        sol.animate(viewer="pyorerun")
+        # animation won't work becquse its a custom model
+        # sol.animate(viewer="pyorerun")
 
         combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
         save_results_holonomic(sol, *combinatorial_parameters, save_folder=save_folder)
