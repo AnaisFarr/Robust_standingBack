@@ -226,4 +226,13 @@ def add_constraint_tucking_friction_cone(biomodel_holonomic, constraints):
         min_bound=-np.inf,
         phase=2,
     )
+    # threshold on last node force to get a consistent release of the tuck position
+    constraints.add(
+        custom_contraint_lambdas_normal,
+        node=Node.END,
+        bio_model=biomodel_holonomic,
+        max_bound=-0.1,
+        min_bound=-30,
+        phase=2,
+    )
     return constraints
