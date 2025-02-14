@@ -146,6 +146,8 @@ analysis_contact_forces/*.svg
 analysis_simulations/*.pdf
 analysis_simulations/*.png
 analysis_simulations/*.svg
+analysis_contact_forces/Figures/
+
 Code - examples/Jump-salto/Figures/Salto_close_loop_with_pelvis_2phases_V2Arm_RotX.svg
 
 Code - examples/Jump-salto/Figures/Salto_close_loop_with_pelvis_2phases_V2Pelvis_RotX.svg
