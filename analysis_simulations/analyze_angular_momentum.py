@@ -62,8 +62,8 @@ import os
 print(os.getcwd())
 
 # Solution with and without holonomic constraints
-path_without = "../src/solutions/KTC/"
-path_CL = "../src/solutions_CL/HTC/"
+path_without = "../results/with_noise/KTC/"
+path_CL = "../results/with_noise/HTC/"
 
 # path_model = "../models/Model2D_7Dof_2C_5M_CL_V3.bioMod"
 path_model = "../models/Model2D_7Dof_3C_5M_CL_V3_V3D.bioMod"

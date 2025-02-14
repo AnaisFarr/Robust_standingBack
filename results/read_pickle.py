@@ -9,7 +9,7 @@ from itertools import product
 
 from pyorerun import PhaseRerun, BiorbdModel, MultiPhaseRerun
 
-model = BiorbdModel("../../models/Model2D_7Dof_2C_5M_CL_V3.bioMod")
+model = BiorbdModel("../models/Model2D_7Dof_2C_5M_CL_V3.bioMod")
 
 data = pickle.load(
     open(
