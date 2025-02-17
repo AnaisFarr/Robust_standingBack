@@ -4,11 +4,8 @@ from typing import Callable
 from bioptim import (
     Solver,
 )
-from src.constants import (
-    PATH_MODEL_1_CONTACT,
-    PATH_MODEL,
-)
 
+from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 from sommersault_taudot import prepare_ocp as prepare_ocp_ntc
 from sommersault_htc_taudot import prepare_ocp as prepare_ocp_with_htc
 from sommersault_ktc_taudot import prepare_ocp as prepare_ocp_with_ktc
@@ -27,10 +24,6 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
     save_folder = f"../results/{str(movement)}_V{version}/{condition}"
     if os.path.isdir(save_folder) is False:
         os.makedirs(save_folder)
-
-    biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.4, 0.2, 0.3, 0.3, 1)
-    n_shooting = (40, 20, 30, 30, 40)
 
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57", show_online_optim=False)
@@ -51,9 +44,9 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
 
         combinatorial_parameters = {
-            "bio_model_path": [biorbd_model_path],
-            "phase_time": [phase_time],
-            "n_shooting": [n_shooting],
+            "bio_model_path": [MODEL_PATHS],
+            "phase_time": [PHASE_TIME],
+            "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
             "seed": list(range(start, end)),
         }
@@ -69,7 +62,7 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
         multi_start.solve()
     else:
-        ocp = prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+        ocp = prepare_ocp(MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START=False)
         # ocp.add_plot_penalty()
 
         solver.show_online_optim = False
@@ -80,7 +73,7 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
         # sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
         # sol.animate()
 
-        combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results(sol, *combinatorial_parameters, save_folder=save_folder)
 
 

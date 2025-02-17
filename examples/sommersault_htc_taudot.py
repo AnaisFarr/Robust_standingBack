@@ -35,8 +35,6 @@ from src.constants import (
     POSE_TUCKING_START,
     POSE_TUCKING_END,
     POSE_LANDING_START,
-    PATH_MODEL_1_CONTACT,
-    PATH_MODEL,
 )
 from src.holonomic_torque_derivative_dynamics import (
     configure_holonomic_torque_derivative_driven,
@@ -49,7 +47,7 @@ from src.collision import transition_pre_with_collision
 from src.save_load_helpers import get_created_data_from_pickle
 from src.save_results import save_results_holonomic_taudot
 from src.initial_guess_utils import interpolate_array
-
+from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 
 # --- Prepare ocp --- #
 def prepare_ocp(biorbd_model_path: tuple, phase_time: tuple, n_shooting: tuple, WITH_MULTI_START: bool, seed=0):
@@ -137,6 +135,7 @@ def prepare_ocp(biorbd_model_path: tuple, phase_time: tuple, n_shooting: tuple, 
     constraints = ConstraintList()
     constraints = add_constraints(constraints)
     constraints = add_constraint_tucking_friction_cone(bio_model[2], constraints)
+
 
     # --- Bounds ---#
     tau_min, tau_max, tau_init = initialize_tau()
@@ -255,18 +254,16 @@ def prepare_ocp(biorbd_model_path: tuple, phase_time: tuple, n_shooting: tuple, 
 def main():
     # --- Parameters --- #
     movement = "Salto_CL"
-    version = "Pierre_taudot2_collision"
+    version = "testing_lambdas"
+    # version = "Pierre_taudot2_collision_plus_constraint"
 
     WITH_MULTI_START = False
     save_folder = f"../results/{str(movement)}_V{version}"
 
-    biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.4, 0.2, 0.3, 0.3, 1)
-    n_shooting = (40, 20, 30, 30, 40)
-
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57", show_online_optim=False)
-    solver.set_maximum_iterations(10000)
+    # solver.set_maximum_iterations(10000)
+    solver.set_maximum_iterations(0)
     solver.set_bound_frac(1e-8)
     solver.set_bound_push(1e-8)
     solver.set_tol(1e-6)
@@ -274,9 +271,9 @@ def main():
     if WITH_MULTI_START:
 
         combinatorial_parameters = {
-            "bio_model_path": [biorbd_model_path],
-            "phase_time": [phase_time],
-            "n_shooting": [n_shooting],
+            "bio_model_path": [MODEL_PATHS],
+            "phase_time": [PHASE_TIME],
+            "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
             "seed": list(range(0, 20)),
         }
@@ -292,7 +289,7 @@ def main():
 
         multi_start.solve()
     else:
-        ocp = prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+        ocp = prepare_ocp(MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START=False)
         # ocp.add_plot_penalty()
 
         solver.show_online_optim = False
@@ -300,7 +297,7 @@ def main():
         sol.print_cost()
 
         # --- Save results --- #
-        combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_holonomic_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
 
         sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)

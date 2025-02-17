@@ -57,15 +57,13 @@ from src.constants import (
     POSE_TUCKING_END,
     POSE_LANDING_START,
     JUMP_INIT_PATH,
-    PATH_MODEL,
-    PATH_MODEL_1_CONTACT,
 )
 from src.constraints import add_constraints
 from src.multistart import prepare_multi_start
 from src.objectives import minimize_actuator_torques, add_objectives, add_tau_derivative_objectives
 from src.save_results import save_results
 from src.save_load_helpers import get_created_data_from_pickle
-
+from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 
 def add_u_bounds(u_bounds, tau_min, tau_max):
     for i in range(5):
@@ -204,10 +202,6 @@ def main():
     WITH_MULTI_START = False
     save_folder = f"../results/{str(movement)}_V{version}"
 
-    biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.4, 0.2, 0.3, 0.3, 1)
-    n_shooting = (40, 20, 30, 30, 40)
-
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57")  # show_online_optim=True,
     solver.set_maximum_iterations(10000)
@@ -218,9 +212,9 @@ def main():
     if WITH_MULTI_START:
 
         combinatorial_parameters = {
-            "bio_model_path": [biorbd_model_path],
-            "phase_time": [phase_time],
-            "n_shooting": [n_shooting],
+            "bio_model_path": [MODEL_PATHS],
+            "phase_time": [PHASE_TIME],
+            "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
             "seed": list(range(0, 20)),
         }
@@ -236,7 +230,7 @@ def main():
 
         multi_start.solve()
     else:
-        ocp = prepare_ocp(biorbd_model_path[0], phase_time[0], n_shooting[0], WITH_MULTI_START=False)
+        ocp = prepare_ocp(MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START=False)
 
         sol = ocp.solve(solver)
         sol.print_cost()
@@ -245,7 +239,7 @@ def main():
         sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
         sol.animate()
 
-        combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results(sol, *combinatorial_parameters, save_folder=save_folder)
 
 

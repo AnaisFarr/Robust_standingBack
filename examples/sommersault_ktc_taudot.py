@@ -29,8 +29,6 @@ from src.constants import (
     POSE_TUCKING_START,
     POSE_TUCKING_END,
     POSE_LANDING_START,
-    PATH_MODEL_1_CONTACT,
-    PATH_MODEL,
 )
 from src.save_load_helpers import get_created_data_from_pickle
 from src.bounds_x import add_x_bounds
@@ -40,9 +38,9 @@ from src.constraints import add_constraints
 from src.constants import JUMP_INIT_PATH
 from src.actuator_constants import ACTUATORS, initialize_tau
 from src.multistart import prepare_multi_start
-from src.phase_transitions import custom_takeoff, continuity_only_q_and_qdot
+from src.phase_transitions import custom_takeoff
 from src.initial_guess_utils import interpolate_array
-
+from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 
 # --- Prepare ocp --- #
 def prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, seed=0):
@@ -94,8 +92,6 @@ def prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, see
     # Transition de phase
     phase_transitions = PhaseTransitionList()
     phase_transitions.add(custom_takeoff, phase_pre_idx=0)
-    # phase_transitions.add(continuity_only_q_and_qdot, phase_pre_idx=1)
-    # phase_transitions.add(continuity_only_q_and_qdot, phase_pre_idx=2)
     phase_transitions.add(PhaseTransitionFcn.IMPACT, phase_pre_idx=3)
 
     # --- Constraints ---#
@@ -211,10 +207,6 @@ def main():
     WITH_MULTI_START = False
     save_folder = f"../results/{str(movement)}_V{version}"
 
-    biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.4, 0.2, 0.3, 0.3, 1)
-    n_shooting = (40, 20, 30, 30, 40)
-
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57", show_online_optim=False)
     solver.set_maximum_iterations(10000)
@@ -225,9 +217,9 @@ def main():
     if WITH_MULTI_START:
 
         combinatorial_parameters = {
-            "bio_model_path": [biorbd_model_path],
-            "phase_time": [phase_time],
-            "n_shooting": [n_shooting],
+            "bio_model_path": [MODEL_PATHS],
+            "phase_time": [PHASE_TIME],
+            "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
             "seed": list(range(0, 20)),
         }
@@ -243,7 +235,7 @@ def main():
 
         multi_start.solve()
     else:
-        ocp = prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+        ocp = prepare_ocp(MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START=False)
         ocp.add_plot_penalty()
 
         solver.show_online_optim = False
@@ -254,7 +246,7 @@ def main():
         # sol.graphs(show_bounds=True,  save_name=str(movement) + "_V" + version)
         # sol.animate(viewer="pyorerun")
 
-        combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
 
 

@@ -31,7 +31,6 @@ Phase 4: Landing
 """
 
 # --- Import package --- #
-import os
 import numpy as np
 from bioptim import (
     BiorbdModel,
@@ -74,7 +73,7 @@ from sommersault import (
     add_x_bounds,
     add_u_bounds,
 )
-
+from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 
 # --- Prepare ocp --- #
 def prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, seed=0):
@@ -259,9 +258,9 @@ def main():
     if WITH_MULTI_START:
 
         combinatorial_parameters = {
-            "bio_model_path": [biorbd_model_path],
-            "phase_time": [phase_time],
-            "n_shooting": [n_shooting],
+            "bio_model_path": [MODEL_PATHS],
+            "phase_time": [PHASE_TIME],
+            "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
             "seed": list(range(0, 20)),
         }
@@ -278,7 +277,7 @@ def main():
         multi_start.solve()
 
     else:
-        ocp = prepare_ocp(biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START=False)
+        ocp = prepare_ocp(MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START=False)
 
         solver.show_online_optim = False
         sol = ocp.solve(solver)
@@ -289,7 +288,7 @@ def main():
         # animation won't work becquse its a custom model
         # sol.animate(viewer="pyorerun")
 
-        combinatorial_parameters = [biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_holonomic(sol, *combinatorial_parameters, save_folder=save_folder)
 
 
