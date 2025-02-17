@@ -52,6 +52,7 @@ from bioptim import (
     Bounds,
     MagnitudeType,
 )
+import matplotlib.pyplot as plt
 from src.actuator_constants import ACTUATORS, initialize_tau
 from src.biorbd_model_holonomic_updated import BiorbdModelCustomHolonomic
 from src.constants import (
@@ -278,13 +279,15 @@ def main():
         sol.print_cost()
 
         # --- Save results --- #
-        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
-        # animation won't work becquse its a custom model
+        # animation won't work because its a custom model
         # sol.animate(viewer="pyorerun")
-
-        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, False, "no_seed"]
         save_results_holonomic(sol, *combinatorial_parameters, save_folder=save_folder)
+        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version, show_now=False)
+        # NOTE: This will save the solution without the ocp, so the graphs cannot be generated after this line
         save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
+        # Showing the graphs
+        plt.show()
 
 if __name__ == "__main__":
     main()

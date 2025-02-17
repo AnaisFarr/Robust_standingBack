@@ -25,6 +25,7 @@ from bioptim import (
     PhaseTransitionFcn,
     Solver,
 )
+import matplotlib.pyplot as plt
 from src.constants import (
     POSE_TUCKING_START,
     POSE_TUCKING_END,
@@ -243,12 +244,15 @@ def main():
         sol.print_cost()
 
         # --- Save results --- #
-        # sol.graphs(show_bounds=True,  save_name=str(movement) + "_V" + version)
-        # sol.animate(viewer="pyorerun")
+        sol.animate(viewer="pyorerun")
 
-        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, False, "no_seed"]
         save_results_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
+        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version, show_now=False)
+        # NOTE: This will save the solution without the ocp, so the graphs cannot be generated after this line
         save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
+        # Showing the graphs
+        plt.show()
 
 
 

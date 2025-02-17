@@ -24,6 +24,7 @@ from bioptim import (
     PhaseTransitionFcn,
     MagnitudeType,
 )
+import matplotlib.pyplot as plt
 from src.save_load_helpers import get_created_data_from_pickle
 from src.bounds_x import add_x_bounds
 from src.save_results import save_results_taudot, save_sol_no_ocp
@@ -236,12 +237,15 @@ def main():
         sol.print_cost()
 
         # --- Save results --- #
-        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
-        # sol.animate()
+        sol.animate(viewer="pyorerun")
 
-        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, False, "no_seed"]
         save_results_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
+        sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version, show_now=False)
+        # NOTE: This will save the solution without the ocp, so the graphs cannot be generated after this line
         save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
+        # Showing the graphs
+        plt.show()
 
 
 if __name__ == "__main__":
