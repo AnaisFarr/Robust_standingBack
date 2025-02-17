@@ -113,3 +113,13 @@ create_subplots(q, min_bounds_q, max_bounds_q, "q")
 create_subplots(qdot, min_bounds_qdot, max_bounds_qdot, "qdot")
 create_subplots(tau, min_bounds_tau, max_bounds_tau, "tau", vertical_idx_offset=3)
 create_subplots(taudot, min_bounds_taudot, max_bounds_taudot, "taudot", vertical_idx_offset=3)
+
+# plot lambdas
+if "lambda" in data:
+    lambdas = np.array(data["lambda"]).squeeze()
+
+    fig = make_subplots(rows=1, cols=2, shared_yaxes=True)
+    fig.add_trace(go.Scatter(x=np.arange(lambdas.shape[1]), y=lambdas[0, :], name="lambda_0"), row=1, col=1)
+    fig.add_trace(go.Scatter(x=np.arange(lambdas.shape[1]), y=lambdas[1, :], name="lambda_1"), row=1, col=2)
+    fig.show()
+
