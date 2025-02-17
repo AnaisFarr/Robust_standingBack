@@ -107,8 +107,9 @@ adjusted_q_CL = adjust_q_with_full_floating_base(data_CL["q_all"])
 adjusted_qdot_CL = adjust_q_with_full_floating_base(data_CL["qdot_all"])
 
 for i in range(data_CL["q_all"].shape[1]):
-    ang_mom_CL[i, :] = model_adjusted.angularMomentum(adjusted_q[:, i], adjusted_qdot[:, i], True).to_array()
-    ang_mom_without[i, :] = model_adjusted.angularMomentum(adjusted_q_CL[:, i], adjusted_qdot_CL[:, i], True).to_array()
+    ang_mom_CL[i, :] = model_adjusted.angularMomentum(adjusted_q_CL[:, i], adjusted_qdot_CL[:, i], True).to_array()
+for i in range(data_without["q_all"].shape[1]):
+    ang_mom_without[i, :] = model_adjusted.angularMomentum(adjusted_q[:, i], adjusted_qdot[:, i], True).to_array()
 
 import plotly.graph_objects as go
 
@@ -123,7 +124,7 @@ fig.add_trace(
 )
 fig.add_trace(
     go.Scatter(
-        x=list(range(0, data_CL["q_all"].shape[1])),
+        x=list(range(0, data_without["q_all"].shape[1])),
         y=ang_mom_without[:, 0],
         mode="lines",
         name="KTC - x",
@@ -139,7 +140,7 @@ fig.add_trace(
 )
 fig.add_trace(
     go.Scatter(
-        x=list(range(0, data_CL["q_all"].shape[1])),
+        x=list(range(0, data_without["q_all"].shape[1])),
         y=ang_mom_without[:, 1],
         mode="lines",
         name="KTC - y",
@@ -155,7 +156,7 @@ fig.add_trace(
 )
 fig.add_trace(
     go.Scatter(
-        x=list(range(0, data_CL["q_all"].shape[1])),
+        x=list(range(0, data_without["q_all"].shape[1])),
         y=ang_mom_without[:, 2],
         mode="lines",
         name="KTC - z",
@@ -171,7 +172,7 @@ fig.add_trace(
 )
 fig.add_trace(
     go.Scatter(
-        x=list(range(0, data_CL["q_all"].shape[1])),
+        x=list(range(0, data_without["q_all"].shape[1])),
         y=np.linalg.norm(ang_mom_without, axis=1),
         mode="lines",
         name="KTC - norm",
