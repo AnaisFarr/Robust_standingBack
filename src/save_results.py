@@ -188,10 +188,8 @@ def save_results_holonomic(
         pickle.dump(data, file)
 
     sol.print_cost()
-    file_path_sol = file_path.replace(".pkl", f"_sol.pkl")
-    with open(file_path_sol, "wb") as file:
-        del sol.ocp
-        pickle.dump(sol, file)
+    if WITH_MULTI_START:
+        save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters)
 
 
 def save_results_taudot(
@@ -307,11 +305,9 @@ def save_results_taudot(
         pickle.dump(data, file)
 
     sol.print_cost()
-    file_path_sol = file_path.replace(".pkl", f"_sol.pkl")
-    with open(file_path_sol, "wb") as file:
-        del sol.ocp
-        pickle.dump(sol, file)
 
+    if WITH_MULTI_START:
+        save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters)
 
 # tau, no taudot, no close loop
 def save_results(
@@ -418,10 +414,8 @@ def save_results(
         pickle.dump(data, file)
 
     sol.print_cost()
-    file_path_sol = file_path.replace(".pkl", f"_sol.pkl")
-    with open(file_path_sol, "wb") as file:
-        del sol.ocp
-        pickle.dump(sol, file)
+    if WITH_MULTI_START:
+        save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters)
 
 
 def save_results_holonomic_taudot(
@@ -613,10 +607,9 @@ def save_results_holonomic_taudot(
         pickle.dump(data, file)
 
     sol.print_cost()
-    file_path_sol = file_path.replace(".pkl", f"_sol.pkl")
-    with open(file_path_sol, "wb") as file:
-        del sol.ocp
-        pickle.dump(sol, file)
+
+    if WITH_MULTI_START:
+        save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters)
 
 
 def contact_force_recomputations(biomodel, q, qdot, tau):
@@ -654,3 +647,20 @@ def contact_force_recomputations(biomodel, q, qdot, tau):
         contact_forces[:, i] = contact_forces_func(qi, qdoti, taui).full().T
 
     return contact_forces
+
+
+def save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters):
+
+    biorbd_model_path, phase_time, n_shooting, WITH_MULTI_START, seed = combinatorial_parameters
+    save_folder = extra_parameters["save_folder"]
+    folder_path = save_folder
+
+    if not os.path.exists(folder_path):
+        os.mkdir(folder_path)
+    file_path_sol = f"{folder_path}/sol_{seed}" + "_CVG" if sol.status == 0 else "_DVG" + ".pkl"
+
+    with open(file_path_sol, "wb") as file:
+        del sol.ocp
+        pickle.dump(sol, file)
+
+    print(f"Solution saved in {file_path_sol}")

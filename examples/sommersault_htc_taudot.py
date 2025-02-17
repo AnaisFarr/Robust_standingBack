@@ -45,7 +45,7 @@ from src.multistart import prepare_multi_start
 from src.phase_transitions import custom_takeoff, custom_phase_transition_pre, custom_phase_transition_post
 from src.collision import transition_pre_with_collision
 from src.save_load_helpers import get_created_data_from_pickle
-from src.save_results import save_results_holonomic_taudot
+from src.save_results import save_results_holonomic_taudot, save_sol_no_ocp
 from src.initial_guess_utils import interpolate_array
 from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
 
@@ -299,6 +299,7 @@ def main():
         # --- Save results --- #
         combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_holonomic_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
+        save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
 
         sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
         # animation won't work because its a custom model

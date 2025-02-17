@@ -59,8 +59,6 @@ from src.constants import (
     POSE_TUCKING_START,
     POSE_TUCKING_END,
     POSE_LANDING_START,
-    PATH_MODEL_1_CONTACT,
-    PATH_MODEL,
 )
 from src.constraints import add_constraints, add_constraint_tucking_friction_cone
 from src.objectives import add_tau_derivative_objectives
@@ -68,7 +66,7 @@ from src.multistart import prepare_multi_start
 from src.objectives import add_objectives, minimize_actuator_torques_CL
 from src.phase_transitions import custom_phase_transition_pre, custom_phase_transition_post
 from src.save_load_helpers import get_created_data_from_pickle
-from src.save_results import save_results_holonomic
+from src.save_results import save_results_holonomic, save_sol_no_ocp
 from sommersault import (
     add_x_bounds,
     add_u_bounds,
@@ -244,10 +242,6 @@ def main():
     WITH_MULTI_START = True
     save_folder = f"../results/{str(movement)}_V{version}"
 
-    biorbd_model_path = (PATH_MODEL_1_CONTACT, PATH_MODEL, PATH_MODEL, PATH_MODEL, PATH_MODEL_1_CONTACT)
-    phase_time = (0.2, 0.2, 0.3, 0.3, 0.3)
-    n_shooting = (20, 20, 30, 30, 30)
-
     # Solver options
     solver = Solver.IPOPT(show_options=dict(show_bounds=True), _linear_solver="MA57")  # show_online_optim=True,
     solver.set_maximum_iterations(10000)
@@ -290,7 +284,7 @@ def main():
 
         combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_holonomic(sol, *combinatorial_parameters, save_folder=save_folder)
-
+        save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
 
 if __name__ == "__main__":
     main()

@@ -32,7 +32,7 @@ from src.constants import (
 )
 from src.save_load_helpers import get_created_data_from_pickle
 from src.bounds_x import add_x_bounds
-from src.save_results import save_results_taudot
+from src.save_results import save_results_taudot, save_sol_no_ocp
 from src.objectives import add_objectives, minimize_actuator_torques, add_taudot_objectives
 from src.constraints import add_constraints
 from src.constants import JUMP_INIT_PATH
@@ -248,6 +248,8 @@ def main():
 
         combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
         save_results_taudot(sol, *combinatorial_parameters, save_folder=save_folder)
+        save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
+
 
 
 if __name__ == "__main__":
