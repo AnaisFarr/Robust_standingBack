@@ -657,7 +657,8 @@ def save_sol_no_ocp(sol, *combinatorial_parameters, **extra_parameters):
 
     if not os.path.exists(folder_path):
         os.mkdir(folder_path)
-    file_path_sol = f"{folder_path}/sol_{seed}" + "_CVG" if sol.status == 0 else "_DVG" + ".pkl"
+    has_converged = "_CVG" if sol.status == 0 else "_DVG"
+    file_path_sol = f"{folder_path}/sol_{seed}" + has_converged + "_sol.pkl"
 
     with open(file_path_sol, "wb") as file:
         del sol.ocp
