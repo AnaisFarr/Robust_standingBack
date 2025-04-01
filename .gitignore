@@ -1389,17 +1389,15 @@ holonomic_research/solutions/Salto_5phases_VPierre_taudot2_NTC_force_constrained
 Results_simu/Jump_4phases_V22.pkl
 Results_simu/
 
-examples/backflip_Vpost_submission_contact_forces.png
+Results_simu/some_graphs/backflip_Vpost_submission_contact_forces.png
 
-examples/backflip_Vpost_submission_q_states.png
+Results_simu/some_graphs/backflip_Vpost_submission_q_states.png
 
-examples/backflip_Vpost_submission_qdot_states.png
+Results_simu/some_graphs/backflip_Vpost_submission_qdot_states.png
 
-examples/backflip_Vpost_submission_tau_states.png
+Results_simu/some_graphs/backflip_Vpost_submission_tau_states.png
 
-examples/backflip_Vpost_submission_taudot_controls.png
-
-examples/front_somersault_htc_taudot.py
+Results_simu/some_graphs/backflip_Vpost_submission_taudot_controls.png
 
 analysis_simulations/post_submission_v1/
 
