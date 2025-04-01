@@ -4,21 +4,28 @@ from typing import Callable
 from bioptim import (
     Solver,
 )
+import matplotlib.pyplot as plt
 
 from constants import MODEL_PATHS, PHASE_TIME, N_SHOOTING
-from sommersault_taudot import prepare_ocp as prepare_ocp_ntc
-from sommersault_htc_taudot import prepare_ocp as prepare_ocp_with_htc
-from sommersault_ktc_taudot import prepare_ocp as prepare_ocp_with_ktc
-from src.save_results import save_results_taudot
-from src.save_results import save_results_holonomic_taudot
+from somersault_taudot import prepare_ocp as prepare_ocp_ntc
+from somersault_htc_taudot import prepare_ocp as prepare_ocp_with_htc
+from somersault_ktc_taudot import prepare_ocp as prepare_ocp_with_ktc
+from src.save_results import save_results_taudot, save_sol_no_ocp, save_results_holonomic_taudot
 
 from src.multistart import prepare_multi_start
 
 
-def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = False, condition: str = ""):
+def main(
+        prepare_ocp: Callable,
+        save_results: Callable,
+        multi_start: bool = False,
+        condition: str = "",
+        seed_start: int = 0,
+        seed_end: int = 20,
+):
     # --- Parameters --- #
     movement = "backflip"
-    version = "post_submission_v3"
+    version = "post_submission_collision_feb25"
 
     WITH_MULTI_START = multi_start
     save_folder = f"../results/{str(movement)}_V{version}/{condition}"
@@ -34,21 +41,12 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
 
     if WITH_MULTI_START:
 
-        end = 20
-        if condition == "ntc":
-            start = 20
-        elif condition == "ktc":
-            start = 20
-        elif condition == "htc":
-            start = 11
-
-
         combinatorial_parameters = {
             "bio_model_path": [MODEL_PATHS],
             "phase_time": [PHASE_TIME],
             "n_shooting": [N_SHOOTING],
             "WITH_MULTI_START": [True],
-            "seed": list(range(start, end)),
+            "seed": list(range(seed_start, seed_end)),
         }
 
         multi_start = prepare_multi_start(
@@ -70,14 +68,25 @@ def main(prepare_ocp: Callable, save_results: Callable, multi_start: bool = Fals
         sol.print_cost()
 
         # --- Save results --- #
-        # sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version)
-        # sol.animate()
-
-        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, WITH_MULTI_START, "no_seed"]
+        combinatorial_parameters = [MODEL_PATHS, PHASE_TIME, N_SHOOTING, False, "no_seed"]
         save_results(sol, *combinatorial_parameters, save_folder=save_folder)
+        # sol.graphs(show_bounds=True, save_name=str(movement) + "_V" + version, show_now=False)
+        # NOTE: This will save the solution without the ocp, so the graphs cannot be generated after this line
+        save_sol_no_ocp(sol, *combinatorial_parameters, save_folder=save_folder)
+        # Showing the graphs
+        # plt.show()
 
 
 if "__main__" == __name__:
-    main(prepare_ocp_ntc, save_results_taudot, multi_start=True, condition="ntc")
-    main(prepare_ocp_with_ktc, save_results_taudot, multi_start=True, condition="ktc")
-    main(prepare_ocp_with_htc, save_results_holonomic_taudot, multi_start=True, condition="htc")
+    conditions= ["htc", "ntc", "ktc"]
+    save_funcs = [save_results_holonomic_taudot, save_results_taudot, save_results_taudot]
+    prepare_ocps = [prepare_ocp_with_htc, prepare_ocp_ntc, prepare_ocp_with_ktc]
+
+    for save_func, condition, prepare_ocp in zip(save_funcs, conditions, prepare_ocps):
+        main(prepare_ocp, save_func, multi_start=False, condition=condition)
+
+    for save_func, condition, prepare_ocp in zip(save_funcs, conditions, prepare_ocps):
+        main(prepare_ocp, save_func, multi_start=True, condition=condition, seed_start=0, seed_end=3)
+
+    for save_func, condition, prepare_ocp in zip(save_funcs, conditions, prepare_ocps):
+        main(prepare_ocp, save_func, multi_start=True, condition=condition, seed_start=3, seed_end=20)
