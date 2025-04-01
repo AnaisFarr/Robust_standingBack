@@ -514,12 +514,6 @@ data_analysis/tau.png
 
 data_analysis/tau.svg
 
-examples/sommersault_htc_taudot.py
-
-examples/sommersault_ktc_taudot.py
-
-examples/sommersault_taudot.py
-
 holonomic_research/Figures/insoles_position_markers.svg
 
 holonomic_research/models/Geometry_cleaned/1mc.vtp
@@ -1393,12 +1387,7 @@ holonomic_research/solutions/Salto_5phases_VPierre_taudot2_NTC_force_constrained
 holonomic_research/solutions/Salto_5phases_VPierre_taudot2_NTC_force_constrained_50N/sol_9_CVG.pkl
 
 Results_simu/Jump_4phases_V22.pkl
-
-results/backflip_Vpost_submission/
-
-results/backflip_Vpost_submission_v3/
-
-results/backflip_Vpost_submission_v2/
+Results_simu/
 
 examples/backflip_Vpost_submission_contact_forces.png
 
